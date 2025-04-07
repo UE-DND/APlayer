@@ -4,6 +4,7 @@ const GitRevisionPlugin = require('git-revision-webpack-plugin');
 const gitRevisionPlugin = new GitRevisionPlugin();
 const autoprefixer = require('autoprefixer');
 const cssnano = require('cssnano');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     mode: 'production',
@@ -60,7 +61,9 @@ module.exports = {
                     {
                         loader: 'postcss-loader',
                         options: {
-                            plugins: [autoprefixer, cssnano],
+                            postcssOptions: {
+                                plugins: [autoprefixer, cssnano],
+                            },
                         },
                     },
                     'sass-loader',
@@ -89,6 +92,19 @@ module.exports = {
             APLAYER_VERSION: `"${require('../package.json').version}"`,
             GIT_HASH: JSON.stringify(gitRevisionPlugin.version()),
         }),
+        new CopyPlugin([
+            {
+                from: path.resolve(__dirname, '..', 'demo/index.html'),
+                to: path.resolve(__dirname, '..', 'dist/index.html'),
+                transform(content) {
+                    return content.toString().replace('../dist/APlayer.min.css', 'APlayer.min.css').replace('../dist/APlayer.min.js', 'APlayer.min.js').replace('demo.js', 'demo.js');
+                },
+            },
+            {
+                from: path.resolve(__dirname, '..', 'demo/demo.js'),
+                to: path.resolve(__dirname, '..', 'dist/demo.js'),
+            },
+        ]),
     ],
 
     node: {
